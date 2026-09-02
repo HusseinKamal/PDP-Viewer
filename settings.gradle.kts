@@ -24,4 +24,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "PDFReader"
 include(":app")
+include(":core")
+include(":domain")
+include(":data")
+include(":feature:pdf")
+include(":feature:history")
  

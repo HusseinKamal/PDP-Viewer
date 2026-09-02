@@ -1,4 +1,4 @@
-package com.hussein.pdfreader.ui.theme
+package com.hussein.pdfreader.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

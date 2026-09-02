@@ -1,4 +1,5 @@
 package com.hussein.pdfreader
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -12,9 +13,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,14 +33,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.hussein.pdfreader.core.ui.theme.PDFReaderTheme
+import com.hussein.pdfreader.navigation.NavGraph
+import com.hussein.pdfreader.navigation.Screen
+import dagger.hilt.android.AndroidEntryPoint
 
-@OptIn(ExperimentalMaterial3Api::class)
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MaterialTheme { // Ensure Theme is applied
+            PDFReaderTheme {
                 var hasPermission by remember {
                     mutableStateOf(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) true
@@ -43,8 +57,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 if (hasPermission) {
-                    // This calls the main screen which contains the ONLY Scaffold/TopBar
-                    PdfAppScreen(intent?.data)
+                    MainScreen(intent?.data)
                 } else {
                     PermissionRequestScreen(onPermissionGranted = { hasPermission = true })
                 }
@@ -52,6 +65,37 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+@Composable
+fun MainScreen(initialUri: android.net.Uri?) {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = currentRoute?.startsWith("pdf") == true,
+                    onClick = { navController.navigate(Screen.Pdf.route) },
+                    icon = { Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF") },
+                    label = { Text("PDF") }
+                )
+                NavigationBarItem(
+                    selected = currentRoute == Screen.History.route,
+                    onClick = { navController.navigate(Screen.History.route) },
+                    icon = { Icon(Icons.Default.History, contentDescription = "History") },
+                    label = { Text("History") }
+                )
+            }
+        }
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            NavGraph(navController = navController, initialUri = initialUri)
+        }
+    }
+}
+
 @Composable
 fun PermissionRequestScreen(onPermissionGranted: () -> Unit) {
     val launcher = rememberLauncherForActivityResult(
