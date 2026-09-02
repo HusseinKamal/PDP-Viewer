@@ -4,8 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,21 +34,41 @@ fun PdfViewer(uri: Uri, context: Context) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
 
-    val state = rememberTransformableState { zoomChange, offsetChange, _ ->
-        scale = (scale * zoomChange).coerceIn(1f, 5f)
-        if (scale > 1f) offset += offsetChange else offset = Offset.Zero
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .transformable(state = state)
             .pointerInput(Unit) {
-                // Double tap to reset zoom
-                detectTapGestures(onDoubleTap = {
-                    scale = 1f
-                    offset = Offset.Zero
-                })
+                detectTransformGestures { _, pan, zoom, _ ->
+                    // 1. Handle Zoom
+                    val oldScale = scale
+                    scale = (scale * zoom).coerceIn(1f, 10f)
+
+                    // 2. Handle Drag (Panning)
+                    // We only allow panning if the image is zoomed in
+                    if (scale > 1f) {
+                        // This logic ensures that the "drag" follows the finger correctly
+                        offset = Offset(
+                            x = offset.x + pan.x,
+                            y = offset.y + pan.y
+                        )
+                    } else {
+                        // Reset offset when zoomed out to 1x
+                        offset = Offset.Zero
+                    }
+                }
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        // Toggle between 1x and 3x zoom on double tap
+                        if (scale > 1f) {
+                            scale = 1f
+                            offset = Offset.Zero
+                        } else {
+                            scale = 3f
+                        }
+                    }
+                )
             }
     ) {
         LazyColumn(
@@ -60,7 +79,10 @@ fun PdfViewer(uri: Uri, context: Context) {
                     scaleY = scale,
                     translationX = offset.x,
                     translationY = offset.y
-                )
+                ),
+            // Disable scrolling of the list itself when zoomed in
+            // so the "Drag" pans the document instead of scrolling the list
+            userScrollEnabled = scale <= 1.1f
         ) {
             items(renderer.pageCount) { index ->
                 var bitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }

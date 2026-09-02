@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,60 +32,24 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            var hasPermission by remember {
-                mutableStateOf(
-                    // On Android 13+, we rely on the Picker, so we can default to true
-                    // On older versions, we check the actual storage permission
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) true
-                    else ContextCompat.checkSelfPermission(
-                        this, Manifest.permission.READ_EXTERNAL_STORAGE
-                    ) == PackageManager.PERMISSION_GRANTED
-                )
-            }
-            if (hasPermission) {
-                // The actual PDF App Logic
-                PdfAppScreen(intent?.data)
-            } else {
-                // Permission Request Screen
-                PermissionRequestScreen(onPermissionGranted = { hasPermission = true })
-            }
-
-            // Check if app was opened via a PDF file intent
-            val intentUri = intent?.data
-            var selectedUri by remember { mutableStateOf(intentUri) }
-
-            val pickerLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.GetContent()
-            ) { uri ->
-                selectedUri = uri
-            }
-
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text("PDF Reader") },
-                        actions = {
-                            Button(onClick = { pickerLauncher.launch("application/pdf") }) {
-                                Text("Open")
-                            }
-                        }
+            MaterialTheme { // Ensure Theme is applied
+                var hasPermission by remember {
+                    mutableStateOf(
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) true
+                        else ContextCompat.checkSelfPermission(
+                            this, Manifest.permission.READ_EXTERNAL_STORAGE
+                        ) == PackageManager.PERMISSION_GRANTED
                     )
                 }
-            ) { padding ->
-                Box(modifier = Modifier.padding(padding)) {
-                    selectedUri?.let {
-                        PdfViewer(it, this@MainActivity)
-                    } ?: CenterText("Please select a PDF file")
+
+                if (hasPermission) {
+                    // This calls the main screen which contains the ONLY Scaffold/TopBar
+                    PdfAppScreen(intent?.data)
+                } else {
+                    PermissionRequestScreen(onPermissionGranted = { hasPermission = true })
                 }
             }
         }
-    }
-}
-
-@Composable
-fun CenterText(text: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text)
     }
 }
 @Composable

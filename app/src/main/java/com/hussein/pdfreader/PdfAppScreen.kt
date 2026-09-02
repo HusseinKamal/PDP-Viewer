@@ -3,8 +3,10 @@ package com.hussein.pdfreader
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,6 +23,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,11 +56,29 @@ fun PdfAppScreen(initialUri: Uri?) {
         if (uri != null) pdfUri = uri
     }
 
+    // Inside your PdfAppScreen
+    var clickCount by remember { mutableIntStateOf(0) }
+
+    // Reset count to 0 if 1 second passes without a click
+    LaunchedEffect(clickCount) {
+        if (clickCount > 0) {
+            delay(1000.milliseconds) // 1 second timeout
+            clickCount = 0
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
+                        modifier = Modifier
+                            .clickable {
+                                clickCount++
+                                if (clickCount >= 3) {
+                                    Toast.makeText(context, "© Created By Asser Hussein", Toast.LENGTH_SHORT).show()
+                                    clickCount = 0 // Reset after showing
+                                }
+                            },
                         text = topBarTitle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
