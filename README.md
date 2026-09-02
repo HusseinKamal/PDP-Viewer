@@ -14,8 +14,11 @@ Orientation is applied .
 
 # Verification
 •The app now supports bottom navigation between the Viewer and History.
+
 •PDF files opened via the file picker or external intents are automatically saved to history.
+
 •You can clear your history using the "Delete All" icon in the History screen.
+
 •The project is fully compliant with modern Android development standards.
 
 
