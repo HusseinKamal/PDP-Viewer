@@ -29,7 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -80,6 +83,11 @@ fun PdfAppScreen(initialUri: Uri?) {
                                 }
                             },
                         text = topBarTitle,
+                        style = TextStyle(
+                            color = Color.Black,
+                            fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                            fontWeight = FontWeight.Bold
+                        ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
