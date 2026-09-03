@@ -11,6 +11,7 @@ import com.hussein.pdfreader.domain.usecase.SavePdfUseCase
 import com.hussein.pdfreader.feature.pdf.mvi.PdfEffect
 import com.hussein.pdfreader.feature.pdf.mvi.PdfIntent
 import com.hussein.pdfreader.feature.pdf.mvi.PdfState
+import com.hussein.pdfreader.feature.pdf.mvi.ViewMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,13 +26,14 @@ class PdfViewModel @Inject constructor(
         when (intent) {
             is PdfIntent.OpenPdf -> openPdf(intent.uri)
             is PdfIntent.ToggleNode -> toggleNode(intent.nodeId)
+            is PdfIntent.ChangeViewMode -> updateState { copy(viewMode = intent.mode) }
             PdfIntent.ExpandAll -> expandAll()
             PdfIntent.CollapseAll -> collapseAll()
         }
     }
 
     private fun openPdf(uri: Uri) {
-        updateState { copy(isLoading = true, error = null, uri = uri) }
+        updateState { copy(isLoading = true, error = null, uri = uri, viewMode = ViewMode.ORIGINAL) }
         
         viewModelScope.launch {
             parsePdfUseCase(uri)

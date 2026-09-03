@@ -33,6 +33,9 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.pdf.viewer.fragment)
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
 }

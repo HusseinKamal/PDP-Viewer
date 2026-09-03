@@ -33,7 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hussein.pdfreader.feature.pdf.components.PdfNodeTree
+import com.hussein.pdfreader.feature.pdf.components.PdfViewer
 import com.hussein.pdfreader.feature.pdf.mvi.PdfIntent
+import com.hussein.pdfreader.feature.pdf.mvi.ViewMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
