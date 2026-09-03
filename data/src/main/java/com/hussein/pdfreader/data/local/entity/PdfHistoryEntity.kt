@@ -5,8 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "pdf_history")
 data class PdfHistoryEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val uri: String,
     val name: String,
-    val uri: String,
     val timestamp: Long
 )

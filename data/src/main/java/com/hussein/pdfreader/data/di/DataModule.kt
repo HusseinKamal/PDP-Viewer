@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.hussein.pdfreader.data.local.PdfDatabase
 import com.hussein.pdfreader.data.local.dao.PdfHistoryDao
+import com.hussein.pdfreader.data.parser.PdfParser
 import com.hussein.pdfreader.data.repository.PdfRepositoryImpl
 import com.hussein.pdfreader.domain.repository.PdfRepository
 import dagger.Module
@@ -33,7 +34,10 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun providePdfRepository(dao: PdfHistoryDao): PdfRepository {
-        return PdfRepositoryImpl(dao)
+    fun providePdfRepository(
+        dao: PdfHistoryDao,
+        parser: PdfParser
+    ): PdfRepository {
+        return PdfRepositoryImpl(dao, parser)
     }
 }

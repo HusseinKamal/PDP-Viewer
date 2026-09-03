@@ -1,5 +1,7 @@
 package com.hussein.pdfreader.domain.repository
 
+import android.net.Uri
+import com.hussein.pdfreader.domain.model.PdfDocument
 import com.hussein.pdfreader.domain.model.PdfHistory
 import kotlinx.coroutines.flow.Flow
 
@@ -8,4 +10,5 @@ interface PdfRepository {
     suspend fun savePdf(pdf: PdfHistory)
     suspend fun deletePdf(pdf: PdfHistory)
     suspend fun deleteAllPdfs()
+    suspend fun parse(uri: Uri): Result<PdfDocument>
 }

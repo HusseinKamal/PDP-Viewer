@@ -3,17 +3,18 @@ package com.hussein.pdfreader.feature.pdf
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,50 +24,54 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hussein.pdfreader.feature.pdf.components.PdfNodeTree
 import com.hussein.pdfreader.feature.pdf.mvi.PdfIntent
+
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.filled.History
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PdfScreen(
     initialUri: Uri? = null,
+    onNavigateToHistory: () -> Unit,
     viewModel: PdfViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(initialUri) {
         if (initialUri != null) {
-            viewModel.onIntent(PdfIntent.LoadPdf(initialUri))
+            viewModel.onIntent(PdfIntent.OpenPdf(initialUri))
         }
     }
 
     val pickerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
-        if (uri != null) viewModel.onIntent(PdfIntent.LoadPdf(uri))
+        if (uri != null) viewModel.onIntent(PdfIntent.OpenPdf(uri))
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.title) },
+                title = { Text(state.document?.fileName ?: "PDF Reader") },
                 actions = {
+                    IconButton(onClick = { viewModel.onIntent(PdfIntent.ExpandAll) }) {
+                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Expand All")
+                    }
+                    IconButton(onClick = { viewModel.onIntent(PdfIntent.CollapseAll) }) {
+                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Collapse All")
+                    }
+                    IconButton(onClick = onNavigateToHistory) {
+                        Icon(Icons.Default.History, contentDescription = "History")
+                    }
                     IconButton(onClick = { pickerLauncher.launch("application/pdf") }) {
                         Icon(Icons.Default.Add, contentDescription = "Open File")
                     }
@@ -79,72 +84,42 @@ fun PdfScreen(
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
-            state.uri?.let { uri ->
-                PdfViewer(uri, state.scale, viewModel::onIntent)
-            } ?: Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Tap the + icon to open a PDF")
-            }
-        }
-    }
-}
-
-@Composable
-fun PdfViewer(
-    uri: Uri,
-    scale: Float,
-    onIntent: (PdfIntent) -> Unit
-) {
-    val context = LocalContext.current
-    val renderer = remember(uri) { PdfRenderManager(context, uri) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTransformGestures { _, _, zoom, _ ->
-                    onIntent(PdfIntent.UpdateScale(scale * zoom))
+            when {
+                state.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
-            }
-            .pointerInput(Unit) {
-                detectTapGestures(onDoubleTap = {
-                    onIntent(PdfIntent.ToggleZoom)
-                })
-            }
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                ),
-            contentPadding = PaddingValues(bottom = 100.dp)
-        ) {
-            items(renderer.pageCount) { index ->
-                var bitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
-
-                LaunchedEffect(index) {
-                    bitmap = renderer.renderPage(index)
-                }
-
-                bitmap?.let {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        contentScale = ContentScale.Fit
+                state.error != null -> {
+                    Text(
+                        text = state.error!!,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.Center).padding(16.dp)
                     )
                 }
+                state.document != null -> {
+                    SelectionContainer {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp)
+                        ) {
+                            items(state.document!!.rootNodes) { node ->
+                                PdfNodeTree(
+                                    node = node,
+                                    expandedNodes = state.expandedNodes,
+                                    onToggle = { viewModel.onIntent(PdfIntent.ToggleNode(it)) }
+                                )
+                            }
+                        }
+                    }
+                }
+                else -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Tap the + icon to open a PDF")
+                    }
+                }
             }
         }
-    }
-
-    DisposableEffect(uri) {
-        onDispose { renderer.close() }
     }
 }

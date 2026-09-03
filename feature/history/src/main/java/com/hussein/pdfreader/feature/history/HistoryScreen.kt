@@ -33,10 +33,13 @@ import com.hussein.pdfreader.domain.model.PdfHistory
 import com.hussein.pdfreader.feature.history.mvi.HistoryEffect
 import com.hussein.pdfreader.feature.history.mvi.HistoryIntent
 
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     onNavigateToPdf: (String) -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -54,6 +57,11 @@ fun HistoryScreen(
         topBar = {
             TopAppBar(
                 title = { Text("History") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
                 actions = {
                     if (state.history.isNotEmpty()) {
                         IconButton(onClick = { viewModel.onIntent(HistoryIntent.DeleteAllHistory) }) {

@@ -31,12 +31,20 @@ fun NavGraph(
         ) { backStackEntry ->
             val uriString = backStackEntry.arguments?.getString("uri")
             val uri = uriString?.let { Uri.parse(it) } ?: initialUri
-            PdfScreen(initialUri = uri)
+            PdfScreen(
+                initialUri = uri,
+                onNavigateToHistory = {
+                    navController.navigate(Screen.History.route)
+                }
+            )
         }
         composable(route = Screen.History.route) {
             HistoryScreen(
                 onNavigateToPdf = { uri ->
                     navController.navigate(Screen.Pdf.passUri(Uri.encode(uri)))
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

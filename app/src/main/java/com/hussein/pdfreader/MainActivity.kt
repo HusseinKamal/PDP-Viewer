@@ -69,27 +69,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(initialUri: android.net.Uri?) {
     val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = currentRoute?.startsWith("pdf") == true,
-                    onClick = { navController.navigate(Screen.Pdf.route) },
-                    icon = { Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF") },
-                    label = { Text("PDF") }
-                )
-                NavigationBarItem(
-                    selected = currentRoute == Screen.History.route,
-                    onClick = { navController.navigate(Screen.History.route) },
-                    icon = { Icon(Icons.Default.History, contentDescription = "History") },
-                    label = { Text("History") }
-                )
-            }
-        }
-    ) { padding ->
+    Scaffold { padding ->
         Box(modifier = Modifier.padding(padding)) {
             NavGraph(navController = navController, initialUri = initialUri)
         }
