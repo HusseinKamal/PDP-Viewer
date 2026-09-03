@@ -71,7 +71,7 @@ fun MainScreen(initialUri: android.net.Uri?) {
     val navController = rememberNavController()
 
     Scaffold { padding ->
-        Box(modifier = Modifier.padding(padding)) {
+        Box(modifier = Modifier) {
             NavGraph(navController = navController, initialUri = initialUri)
         }
     }

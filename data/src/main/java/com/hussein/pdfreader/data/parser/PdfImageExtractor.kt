@@ -2,9 +2,9 @@ package com.hussein.pdfreader.data.parser
 
 import android.content.Context
 import android.graphics.Bitmap
-import com.tomroush.pdfbox.cos.COSName
-import com.tomroush.pdfbox.pdmodel.PDPage
-import com.tomroush.pdfbox.pdmodel.graphics.image.PDImageXObject
+import com.tom_roush.pdfbox.cos.COSName
+import com.tom_roush.pdfbox.pdmodel.PDPage
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.FileOutputStream

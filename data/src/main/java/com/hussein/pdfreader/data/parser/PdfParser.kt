@@ -3,11 +3,11 @@ package com.hussein.pdfreader.data.parser
 import android.content.Context
 import android.net.Uri
 import com.hussein.pdfreader.domain.model.PdfDocument
-import com.tomroush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import com.tom_roush.pdfbox.pdmodel.PDDocument
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
@@ -18,6 +18,10 @@ class PdfParser @Inject constructor(
     private val hierarchyBuilder: PdfHierarchyBuilder,
     private val imageExtractor: PdfImageExtractor
 ) {
+    init {
+        PDFBoxResourceLoader.init(context)
+    }
+
     suspend fun parse(uri: Uri): Result<PdfDocument> = withContext(Dispatchers.IO) {
         runCatching {
             val inputStream = context.contentResolver.openInputStream(uri)

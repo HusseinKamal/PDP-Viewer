@@ -1,8 +1,8 @@
 package com.hussein.pdfreader.data.parser
 
-import com.tomroush.pdfbox.pdmodel.PDPage
-import com.tomroush.pdfbox.text.PDFTextStripper
-import com.tomroush.pdfbox.text.TextPosition
+import com.tom_roush.pdfbox.pdmodel.PDPage
+import com.tom_roush.pdfbox.text.PDFTextStripper
+import com.tom_roush.pdfbox.text.TextPosition
 import java.io.IOException
 import java.io.StringWriter
 import javax.inject.Inject
@@ -28,7 +28,7 @@ class PdfTextExtractor @Inject constructor() {
 
         @Throws(IOException::class)
         override fun writeString(text: String?, textPositions: MutableList<TextPosition>?) {
-            if (text == null || textPositions == null || textPositions.isEmpty()) return
+            if (text == null || textPositions.isNullOrEmpty()) return
             
             val first = textPositions.first()
             val fontSize = first.fontSizeInPt
